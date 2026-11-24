@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Junien lähtötaulu</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header>
+    <div class="header-content">
+        <div>
+            <h1>🚆 Junien lähtötaulu</h1>
+            <p>Suomen rautatieasemien reaaliaikaiset lähdöt</p>
+        </div>
+        <div class="live-indicator">
+            <span></span> LIVE
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="controls">
+        <div>
+            <label for="station">Valitse rautatieasema</label>
+            <select id="station">
+                {% for code, name in stations.items() %}
+                <option value="{{ code }}">
+                    {{ name }} ({{ code }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button id="refresh-button">Hae junat</button>
+    </section>
+
+    <section class="board">
+        <div class="board-header">
+            <div>
+                <h2 id="station-name">Helsinki</h2>
+                <p>Lähtevät junat</p>
+            </div>
+
+            <div class="clock">
+                <span id="current-time">--:--:--</span>
+                <small id="last-update">Odotetaan tietoja...</small>
+            </div>
+        </div>
+
+        <div id="status" role="status"></div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Juna</th>
+                        <th>Määränpää</th>
+                        <th>Aikataulu</th>
+                        <th>Arvio / toteutunut</th>
+                        <th>Myöhässä</th>
+                    </tr>
+                </thead>
+
+                <tbody id="departure-list">
+                    <tr>
+                        <td colspan="5">Haetaan tietoja...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="disclaimer">
+            Tiedot perustuvat Digitrafficin junadataan.
+            Päivitysväli 30 sekuntia.
+        </p>
+    </section>
+</main>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
