@@ -2,9 +2,9 @@
   <tr><td colspan="6" class="error">⚠️ {{ error }}</td></tr>
 {% elif rows %}
   {% for r in rows %}
-  <tr>
-    <td>
-      {{ r.train }}{% if r.commuter_line %} ({{ r.commuter_line }}){% endif %}
+  <tr data-category="{{ r.category }}">
+    <td class="cat-edge">
+      <span class="cat-dot" aria-hidden="true"></span>{{ r.train }}{% if r.commuter_line %} <span class="commuter-line">({{ r.commuter_line }})</span>{% endif %}
     </td>
     <td>{{ r.destination }}</td>
     <td>{{ r.scheduled }}</td>
@@ -15,17 +15,20 @@
       {% endif %}
     </td>
     <td>
-      {% if r.cancelled %}
-        <span class="cancelled">Cancelled</span>
-      {% elif r.delay_min and r.delay_min > 0 %}
-        <span class="late">Late {{ r.delay_min }} min</span>
+      {% if r.status == "cancelled" %}
+        <span class="status-pill status-cancelled">Cancelled</span>
+      {% elif r.status == "critical" %}
+        <span class="status-pill status-critical">⚠ Late {{ r.delay_min }} min</span>
+      {% elif r.status == "warning" %}
+        <span class="status-pill status-warning">Late {{ r.delay_min }} min</span>
       {% else %}
-        <span class="ontime">On time</span>
+        <span class="status-pill status-good">✓ On time</span>
       {% endif %}
     </td>
     <td>{{ r.track }}</td>
   </tr>
   {% endfor %}
+  <tr id="no-match-row" class="no-match-row"><td colspan="6">No trains match the current filter.</td></tr>
 {% else %}
   <tr><td colspan="6">No departing trains in the next {{ 120 }} minutes.</td></tr>
 {% endif %}

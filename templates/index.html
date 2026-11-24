@@ -4,33 +4,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Finnish Trains — Station Picker</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 3rem auto; }
-    select, button { font-size: 1rem; padding: .5rem; }
-    .hint { color: #666; font-size: .9rem; }
-    .error { color: #c0392b; background: #fdecea; padding: .75rem; border-radius: 4px; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>🚆 Finnish Railway Departures</h1>
+  <div class="page">
+    <div class="banner">
+      <h1>🚆 Finnish Railway Departures</h1>
+      {% if stations %}
+        <p class="hint">{{ stations|length }} passenger stations available.</p>
+      {% endif %}
+    </div>
 
-  {% if error %}
-    <p class="error">⚠️ {{ error }}</p>
-  {% endif %}
+    {% if error %}
+      <p class="error">⚠️ {{ error }}</p>
+    {% endif %}
 
-  <form action="{{ url_for('station_select') }}" method="get">
-    <label for="code">Select station:</label>
-    <select name="code" id="code" required onchange="this.form.submit()">
-      <option value="" disabled selected>— choose a station —</option>
-      {% for s in stations %}
-        <option value="{{ s.stationShortCode }}">{{ s.stationName }}</option>
-      {% endfor %}
-    </select>
-    <button type="submit">Show departures</button>
-  </form>
+    <div class="card">
+      <form action="{{ url_for('station_select') }}" method="get">
+        <label for="code">Select station:</label>
+        <select name="code" id="code" required data-autosubmit>
+          <option value="" disabled selected>— choose a station —</option>
+          {% for s in stations %}
+            <option value="{{ s.stationShortCode }}">{{ s.stationName }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">Show departures</button>
+      </form>
+    </div>
+  </div>
 
-  {% if stations %}
-    <p class="hint">{{ stations|length }} passenger stations available.</p>
-  {% endif %}
+  <script src="{{ url_for('static', filename='station-select.js') }}" defer></script>
 </body>
 </html>

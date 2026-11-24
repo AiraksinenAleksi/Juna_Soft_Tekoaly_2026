@@ -1,0 +1,244 @@
+/* Finnish Railway Departures — shared stylesheet (served same-origin so it
+   clears the app's `style-src 'self'` CSP; see app.py's security_headers). */
+
+:root {
+  color-scheme: light;
+  --page:          #f9f9f7;
+  --surface:       #fcfcfb;
+  --text-primary:  #0b0b0b;
+  --text-secondary:#52514e;
+  --text-muted:    #898781;
+  --gridline:      #e1e0d9;
+  --border:        rgba(11, 11, 11, 0.10);
+
+  --accent:        #2a78d6;
+  --accent-ink:    #ffffff;
+
+  --cat-commuter:      #2a78d6;
+  --cat-long-distance: #6250d6;
+  --cat-cargo:         #eb6834;
+  --cat-other:         #898781;
+
+  --status-good:     #0ca30c;
+  --status-warning:  #fab219;
+  --status-critical: #d03b3b;
+  --status-ink-on-light-fill: #0b0b0b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page:          #0d0d0d;
+    --surface:       #1a1a19;
+    --text-primary:  #f0efec;
+    --text-secondary:#c3c2b7;
+    --text-muted:    #898781;
+    --gridline:      #2c2c2a;
+    --border:        rgba(255, 255, 255, 0.10);
+
+    --accent:        #3987e5;
+
+    --cat-commuter:      #3987e5;
+    --cat-long-distance: #9085e9;
+    --cat-cargo:         #d95926;
+    --cat-other:         #898781;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--page);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 2rem 1rem 4rem;
+}
+
+.page {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+a { color: var(--accent); }
+
+h1 {
+  font-size: 1.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+h1 small {
+  font-size: .95rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.banner {
+  background: linear-gradient(135deg, var(--cat-commuter), var(--cat-long-distance));
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem 1.5rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+}
+.banner h1 { margin: 0; color: #ffffff; }
+.banner h1 small { color: rgba(255, 255, 255, .85); }
+.banner .hint { color: rgba(255, 255, 255, .85); margin: .5rem 0 0; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+label { font-weight: 600; margin-right: .5rem; }
+
+select, button {
+  font-size: 1rem;
+  font-family: inherit;
+  padding: .55rem .75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+select:focus, button:focus-visible, .filter-pill:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button, .btn {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter .1s ease;
+}
+button:hover, .btn:hover { filter: brightness(1.08); }
+
+.hint { color: var(--text-secondary); font-size: .9rem; }
+
+.error {
+  color: #ffffff;
+  background: var(--status-critical);
+  padding: .75rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+
+/* ---- filter pills ---- */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0 0 1rem;
+}
+.filter-pill {
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .4rem .9rem;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.filter-pill:hover { border-color: var(--accent); color: var(--text-primary); }
+.filter-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ---- departures table ---- */
+.table-wrap { overflow-x: auto; }
+
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+caption { text-align: left; color: var(--text-muted); font-size: .85rem; padding-bottom: .5rem; }
+
+th, td {
+  padding: .6rem .75rem;
+  border-bottom: 1px solid var(--gridline);
+  text-align: left;
+  white-space: nowrap;
+}
+th {
+  color: var(--text-secondary);
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  font-weight: 600;
+}
+
+tbody tr { transition: background-color .15s ease; }
+tbody tr:hover { background: var(--gridline); }
+
+/* category identity: a colored left edge on the row (via first cell) */
+td.cat-edge { border-left: 4px solid var(--cat-other); }
+tr[data-category="Commuter"] td.cat-edge { border-left-color: var(--cat-commuter); }
+tr[data-category="Long-distance"] td.cat-edge { border-left-color: var(--cat-long-distance); }
+tr[data-category="Cargo"] td.cat-edge { border-left-color: var(--cat-cargo); }
+
+.cat-dot {
+  display: inline-block;
+  width: .55rem;
+  height: .55rem;
+  border-radius: 50%;
+  margin-right: .4rem;
+  background: var(--cat-other);
+  vertical-align: middle;
+}
+tr[data-category="Commuter"] .cat-dot { background: var(--cat-commuter); }
+tr[data-category="Long-distance"] .cat-dot { background: var(--cat-long-distance); }
+tr[data-category="Cargo"] .cat-dot { background: var(--cat-cargo); }
+
+.commuter-line {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* status pills: color never carries meaning alone, text label always present */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status-good     { background: color-mix(in srgb, var(--status-good) 16%, transparent);     color: var(--status-good); }
+.status-warning  { background: color-mix(in srgb, var(--status-warning) 22%, transparent);  color: var(--status-ink-on-light-fill); }
+.status-critical { background: color-mix(in srgb, var(--status-critical) 16%, transparent); color: var(--status-critical); }
+.status-cancelled {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  background: none;
+  font-weight: 500;
+}
+
+tr.no-match-row { display: none; }
+tr.no-match-row td { color: var(--text-muted); font-style: italic; }
+
+.back { margin-top: 1.5rem; }
+.meta { color: var(--text-muted); font-size: .85rem; }
+
+@media (max-width: 480px) {
+  body { padding: 1rem .75rem 3rem; }
+  th, td { padding: .5rem .5rem; }
+}

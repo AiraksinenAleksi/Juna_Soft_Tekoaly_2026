@@ -117,7 +117,13 @@ def train_row(train, station_code, today=None):
     if dep.get("liveEstimateTime"):
         try:
             live_dt = parse_iso(dep["liveEstimateTime"])
-            delay_min = round((live_dt - scheduled_dt).total_seconds() / 60)
+            # Minute-truncated, like fmt_time()'s HH:MM display below — so the
+            # "Late N min" badge always agrees with what the two time columns
+            # visibly show, instead of rounding the raw (sub-minute) seconds
+            # difference and occasionally landing a minute off from the display.
+            sched_minute = scheduled_dt.replace(second=0, microsecond=0)
+            live_minute = live_dt.replace(second=0, microsecond=0)
+            delay_min = int((live_minute - sched_minute).total_seconds() // 60)
         except (TypeError, ValueError):
             live_dt, delay_min = scheduled_dt, None
     else:
@@ -133,9 +139,20 @@ def train_row(train, station_code, today=None):
     category = train.get("trainCategory") or ""
     number = train.get("trainNumber")
     label = f"{category} {number}".strip() if number is not None else category
+    cancelled = bool(dep.get("cancelled"))
+
+    if cancelled:
+        status = "cancelled"
+    elif delay_min and delay_min > 10:
+        status = "critical"
+    elif delay_min and delay_min > 0:
+        status = "warning"
+    else:
+        status = "good"
 
     return {
         "train": label,
+        "category": category,
         "commuter_line": train.get("commuterLineID"),
         "destination_code": destination_code,
         "destination": station_name(destination_code) if destination_code else "?",
@@ -143,7 +160,8 @@ def train_row(train, station_code, today=None):
         "scheduled": fmt_time(scheduled_dt, today),
         "live": fmt_time(live_dt, today),
         "delay_min": delay_min,
-        "cancelled": bool(dep.get("cancelled")),
+        "cancelled": cancelled,
+        "status": status,
         "track": dep.get("commercialTrack") or "",
     }
 
@@ -206,7 +224,7 @@ def live_departures(code, force=False):
 def security_headers(resp):
     resp.headers.setdefault(
         "Content-Security-Policy",
-        "default-src 'none'; style-src 'self'; "
+        "default-src 'none'; style-src 'self'; script-src 'self'; "
         "connect-src 'self'; form-action 'self'; base-uri 'none'",
     )
     resp.headers.setdefault("X-Content-Type-Options", "nosniff")
