@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finnish Trains — Station Picker</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 3rem auto; }
+    select, button { font-size: 1rem; padding: .5rem; }
+    .hint { color: #666; font-size: .9rem; }
+    .error { color: #c0392b; background: #fdecea; padding: .75rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>🚆 Finnish Railway Departures</h1>
+
+  {% if error %}
+    <p class="error">⚠️ {{ error }}</p>
+  {% endif %}
+
+  <form action="{{ url_for('station_select') }}" method="get">
+    <label for="code">Select station:</label>
+    <select name="code" id="code" required onchange="this.form.submit()">
+      <option value="" disabled selected>— choose a station —</option>
+      {% for s in stations %}
+        <option value="{{ s.stationShortCode }}">{{ s.stationName }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Show departures</button>
+  </form>
+
+  {% if stations %}
+    <p class="hint">{{ stations|length }} passenger stations available.</p>
+  {% endif %}
+</body>
+</html>

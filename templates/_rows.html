@@ -1,0 +1,31 @@
+{% if error %}
+  <tr><td colspan="6" class="error">⚠️ {{ error }}</td></tr>
+{% elif rows %}
+  {% for r in rows %}
+  <tr>
+    <td>
+      {{ r.train }}{% if r.commuter_line %} ({{ r.commuter_line }}){% endif %}
+    </td>
+    <td>{{ r.destination }}</td>
+    <td>{{ r.scheduled }}</td>
+    <td>
+      {% if r.cancelled %}—
+      {% elif r.delay_min and r.delay_min > 0 %}{{ r.live }}
+      {% else %}{{ r.scheduled }}
+      {% endif %}
+    </td>
+    <td>
+      {% if r.cancelled %}
+        <span class="cancelled">Cancelled</span>
+      {% elif r.delay_min and r.delay_min > 0 %}
+        <span class="late">Late {{ r.delay_min }} min</span>
+      {% else %}
+        <span class="ontime">On time</span>
+      {% endif %}
+    </td>
+    <td>{{ r.track }}</td>
+  </tr>
+  {% endfor %}
+{% else %}
+  <tr><td colspan="6">No departing trains in the next {{ 120 }} minutes.</td></tr>
+{% endif %}

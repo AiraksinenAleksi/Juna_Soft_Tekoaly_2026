@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Departures — {{ station_name }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2rem auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: .5rem .75rem; border-bottom: 1px solid #ddd; text-align: left; }
+    th { background: #f2f2f2; }
+    .late { color: #c0392b; font-weight: bold; }
+    .ontime { color: #27ae60; }
+    .cancelled { color: #999; text-decoration: line-through; }
+    .back { margin-top: 1.5rem; }
+    .switch { margin-top: .5rem; font-size: .95rem; }
+    .error { color: #c0392b; background: #fdecea; padding: .75rem; border-radius: 4px; }
+    .meta { color: #888; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <h1>🚆 Departures from {{ station_name }} <small>({{ station_code }})</small></h1>
+
+  <p class="meta">Board refreshes automatically every 60 seconds.</p>
+
+  <div class="switch">
+    <form action="{{ url_for('station_select') }}" method="get">
+      <label for="switch-code">Switch station:</label>
+      <select name="code" id="switch-code" required onchange="this.form.submit()">
+        <option value="" disabled selected>— choose —</option>
+        {% for s in stations %}
+          <option value="{{ s.stationShortCode }}"
+                  {% if s.stationShortCode == station_code %}selected{% endif %}>
+            {{ s.stationName }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit">Go</button>
+    </form>
+  </div>
+
+  <table>
+    <caption class="meta">Next departures from {{ station_name }}</caption>
+    <thead>
+      <tr>
+        <th>Train</th><th>To</th><th>Sched.</th>
+        <th>Estimated</th><th>Status</th><th>Track</th>
+      </tr>
+    </thead>
+    <tbody id="departures-body" aria-live="polite">
+      {% include "_rows.html" %}
+    </tbody>
+  </table>
+
+  <p class="back"><a href="{{ url_for('index') }}">← All stations</a></p>
+
+  <script>
+    // Minimal auto-refresh: re-fetch only the table body fragment.
+    (function () {
+      const body = document.getElementById("departures-body");
+      const url = {{ url_for('departures_partial', code=station_code) | tojson }};
+      let refreshing = false;
+
+      async function refresh() {
+        if (refreshing || document.hidden) return;   // skip hidden tabs
+        refreshing = true;
+        try {
+          const res = await fetch(url, { headers: { "Accept": "text/html" } });
+          if (res.ok) {
+            body.innerHTML = await res.text();
+          }
+        } catch (e) { /* keep showing current data on transient failures */ }
+        finally { refreshing = false; }
+      }
+
+      setInterval(refresh, 60000);
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) refresh();             // fresh data when tab returns
+      });
+    })();
+  </script>
+</body>
+</html>
